@@ -16,7 +16,7 @@ int main()
 		assert(0);
 	};
 
-	strcpy(ifr.ifr_name, "mgmt");
+	strcpy(ifr.ifr_name, "eth0");
 	if (ioctl(sock, SIOCGIFFLAGS, &ifr) != 0) {
 		fprintf(stderr, "couldn't ioctl iface: %s\n",
 		        ifr.ifr_name);
