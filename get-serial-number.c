@@ -140,7 +140,7 @@ int write_hostname(const char *hn)
 		perror("Couldn't open hostname file.");
 		return -1;
 	}
-	if(0 > fprintf(f, "%s", hn)) {
+	if(0 > fprintf(f, "%s\n", hn)) {
 		perror("Couldn't write id.");
 		fclose(f);
 		return -1;
@@ -156,7 +156,7 @@ int write_machine_id(unsigned int id)
 		perror("Couldn't open machine-id file.");
 		return -1;
 	}
-	if(0 > fprintf(f, "%032d", id)) {
+	if(0 > fprintf(f, "%032d\n", id)) {
 		perror("Couldn't write id.");
 		fclose(f);
 		return -1;
