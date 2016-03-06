@@ -78,13 +78,20 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if (write_files && (0 != write_machine_id(sn))) {
-		fprintf(stderr, "Couldn't write machine id or hostname\n");
-		exit(EXIT_FAILURE);
-	}
-
 	char hostname[25];
 	sn2hostname(sn, hostname);
+
+	if (write_files) {
+		if (0 != write_machine_id(sn)) {
+			fprintf(stderr, "Couldn't write machine id\n");
+			exit(EXIT_FAILURE);
+		}
+		if (0 != write_hostname(hostname)) {
+			fprintf(stderr, "Couldn't write host name\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
 
 	printf("Model: %s\n", model);
 	printf("Machine ID: %032d\n", sn);
