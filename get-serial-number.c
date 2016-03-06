@@ -11,10 +11,11 @@
 #include "model_numbers.h"
 
 
-int get_sn(char *iface, unsigned int *si);
-int check_model_name(char *m);
-int write_hostname(unsigned int id);
+int get_sn(char *iface, int model_id, unsigned int *si);
+int check_model_name(char *m, int *id);
+int write_hostname(const char *hn);
 int write_machine_id(unsigned int id);
+int sn2hostname(int sn, char *hostname);
 
 static struct option options[] = {
 	{ "help", no_argument, NULL, 'h' },
@@ -66,12 +67,13 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if (0 != check_model_name(model)) {
+	int model_number = 0;
+	if (0 != check_model_name(model, &model_number)) {
 		fprintf(stderr, "Model %s not recognised\n", model);
 		exit(EXIT_FAILURE);
 	}
 
-	if (0 != get_sn(iface, &sn)) {
+	if (0 != get_sn(iface, model_number, &sn)) {
 		perror("Couldn't get serial number.");
 		exit(EXIT_FAILURE);
 	}
@@ -81,20 +83,30 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	char hostname[25];
+	sn2hostname(sn, hostname);
+
 	printf("Model: %s\n", model);
 	printf("Machine ID: %032d\n", sn);
-	printf("Hostname: %d\n", sn);
+	printf("Hostname: %s\n", hostname);
 
 	return 0;
 }
 
-int check_model_name(char *m)
+int sn2hostname(int sn, char *hostname)
+{
+	assert(hostname);
+	sprintf(hostname, "%s-%d", "bufferupr", sn);
+	return 0;
+}
+
+int check_model_name(char *m, int *number)
 {
 	struct model *mt = model_n2n;
 	while (mt->number) {
-		printf("model: %s\n", mt->name);
 		if (0 == strcmp(m, mt->name)) {
 			/* found match. */
+			*number = mt->number;
 			return 0;
 		}
 		mt++;
@@ -114,14 +126,14 @@ int check_model_number(int m)
 	}
 }
 
-int write_hostname(unsigned int id)
+int write_hostname(const char *hn)
 {
 	FILE *f = fopen("/etc/hostname", "w+");
 	if (!f) {
 		perror("Couldn't open hostname file.");
 		return -1;
 	}
-	if(0 > fprintf(f, "%032d", id)) {
+	if(0 > fprintf(f, "%s", hn)) {
 		perror("Couldn't write id.");
 		fclose(f);
 		return -1;
@@ -146,7 +158,7 @@ int write_machine_id(unsigned int id)
 	return 0;
 }
 
-int get_sn(char *iface, unsigned int *si)
+int get_sn(char *iface, int model_id, unsigned int *si)
 {
 	unsigned char mac_address[6];
 	unsigned char sn[4] = {0};
@@ -174,6 +186,7 @@ int get_sn(char *iface, unsigned int *si)
 
 		*si = sn[2] + 256 * sn[1] + 65536 * sn[0];
 		*si = *si / 4 - 64;
+		*si = *si + model_id;
 		return 0;
 	}
 	return -1;

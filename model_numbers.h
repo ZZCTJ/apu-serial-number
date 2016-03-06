@@ -8,17 +8,18 @@ enum model_enum {
 };
 
 struct model {
+	int id;
 	int number;
 	const char *name;
 };
 
 
 struct model model_n2n[] = {
-	{TEST, "test"},
-	{APU1, "apu1"},
-	{APU2, "apu2"},
+	{TEST, 100000000, "test"},
+	{APU1, 200000000, "apu1"},
+	{APU2, 300000000, "apu2"},
 
-	{0, 0}
+	{0, 0, 0}
 };
 
 #endif
